@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Game Dân Gian Việt Nam</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Pacifico&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="auth-overlay hidden" id="authOverlay">
+    <div class="auth-card">
+      <div class="auth-emblem">🎋</div>
+      <p class="eyebrow">GÓC SÂN TUỔI THƠ</p>
+      <h1>Game Dân Gian</h1>
+      <p>Đăng nhập bằng email để tạo phòng và chơi online cùng bạn bè ở xa.</p>
+      <label for="authEmail">Email</label><input id="authEmail" type="email" autocomplete="email" placeholder="ban@example.com">
+      <label for="authPassword">Mật khẩu</label><input id="authPassword" type="password" autocomplete="current-password" placeholder="Ít nhất 6 ký tự">
+      <div class="auth-actions"><button id="loginBtn" class="primary-btn">Đăng nhập</button><button id="signupBtn" class="small-btn">Tạo tài khoản</button></div>
+      <button id="showSignupHintBtn" class="text-btn auth-switch" type="button">Chưa có tài khoản? Đăng ký bằng email</button>
+      <p id="authMessage" class="auth-message">Bạn cần cấu hình Firebase theo file HUONG_DAN_ONLINE.md để bật đăng nhập.</p>
+      <button id="guestBtn" class="text-btn auth-switch" type="button">Để sau — quay lại chơi 2 người / với máy</button>
+    </div>
+  </div>
+
+  <div class="app">
+
+    <!-- MENU -->
+    <section id="menuScreen" class="screen active">
+      <div class="hero">
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+          <div class="flag">🇻🇳</div>
+          <p class="eyebrow">TRÒ CHƠI 2 NGƯỜI • CÙNG THIẾT BỊ</p>
+          <h1>Game Dân Gian</h1>
+          <p class="subtitle">Ôn lại trò chơi tuổi thơ theo một cách hiện đại.</p>
+          <div class="online-bar" id="onlineBar">
+            <span id="signedInAs">Chưa đăng nhập</span>
+            <button id="showLoginBtn" class="text-btn" type="button">Đăng nhập</button>
+            <button id="logoutBtn" class="text-btn">Đăng xuất</button>
+          </div>
+          <div class="room-panel mode-panel">
+            <h2>Chế độ chơi</h2>
+            <p>Chơi cùng bạn trên một máy, hoặc chơi một mình với máy (bot).</p>
+            <div class="room-controls">
+              <select id="playMode" autocomplete="off" aria-label="Chế độ chơi">
+                <option value="human">👥 2 người cùng máy</option>
+                <option value="bot">🤖 Chơi với máy (bot)</option>
+              </select>
+              <select id="botLevel" class="hidden" autocomplete="off" aria-label="Độ khó của bot">
+                <option value="easy">Dễ</option>
+                <option value="medium" selected>Vừa</option>
+                <option value="hard">Khó</option>
+              </select>
+            </div>
+            <p id="modeMessage" class="auth-message">Đang chơi 2 người cùng máy.</p>
+          </div>
+          <div class="room-panel">
+            <h2>Chơi cùng bạn bè ở xa</h2>
+            <p>Tạo phòng mới hoặc nhập mã phòng của bạn bè.</p>
+            <div class="room-controls"><select id="roomGame"><option value="caro">Cờ Caro 7×7</option><option value="oanquan">Ô Ăn Quan</option></select><button id="createRoomBtn" class="primary-btn">Tạo phòng</button></div>
+            <div class="room-controls"><input id="roomCodeInput" maxlength="6" placeholder="Nhập mã phòng"><button id="joinRoomBtn" class="small-btn">Vào phòng</button></div>
+            <p id="roomMessage" class="auth-message">Đăng nhập để bắt đầu chơi online.</p>
+            <div id="roomInfo" class="room-info hidden"><span>Mã phòng: <strong id="roomCodeLabel"></strong></span><button id="copyRoomBtn" class="text-btn">Sao chép mã</button><span id="roomRoleLabel"></span><button id="rematchBtn" class="small-btn">Chơi lại ván</button><button id="leaveRoomBtn" class="text-btn">Rời phòng</button></div>
+          </div>
+
+          <div class="game-cards">
+            <button class="game-card" id="openOanQuan">
+              <div class="card-image oanquan-image"></div>
+              <div class="card-body">
+                <span class="badge">TRUYỀN THỐNG</span>
+                <h2>Ô Ăn Quan</h2>
+                <p>Rải quân, tính nước và thu thập nhiều quân hơn đối thủ.</p>
+                <span class="play-link">Chơi ngay →</span>
+              </div>
+            </button>
+
+            <button class="game-card" id="openCaro">
+              <div class="card-image caro-image">
+                <span class="big-x">×</span><span class="big-o">○</span>
+              </div>
+              <div class="card-body">
+                <span class="badge">KINH ĐIỂN</span>
+                <h2>Cờ Caro 7×7</h2>
+                <p>Hai người lần lượt đặt X và O. Ai có 5 quân liên tiếp sẽ thắng.</p>
+                <span class="play-link">Chơi ngay →</span>
+              </div>
+            </button>
+
+            <button class="game-card" id="openBauCua">
+              <div class="card-image baucua-image">
+                <span>🦀</span><span>🦐</span><span>🐟</span>
+              </div>
+              <div class="card-body">
+                <span class="badge">NGÀY TẾT</span>
+                <h2>Bầu Cua Tôm Cá</h2>
+                <p>Đặt cược vào các con, lắc 3 xúc xắc và thử vận may đầu năm.</p>
+                <span class="play-link">Chơi ngay →</span>
+              </div>
+            </button>
+          </div>
+
+          <p class="footer-note">🖱️ Chơi bằng chuột • 👥 2 người • 💻 Không cần cài đặt</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Ô ĂN QUAN -->
+    <section id="oanQuanScreen" class="screen game-screen">
+      <header class="game-header">
+        <button class="back-btn" data-menu>← Menu</button>
+        <div>
+          <p class="eyebrow">GAME 01</p>
+          <h1>Ô Ăn Quan</h1>
+        </div>
+        <button class="small-btn" id="resetOanQuan">Chơi lại</button>
+      </header>
+
+      <div class="room-strip hidden" data-room-strip>
+        <span>🌐 Phòng <strong data-room-code></strong></span>
+        <span data-room-role></span>
+        <button class="text-btn" data-copy-room type="button">Sao chép mã</button>
+        <button class="small-btn" data-rematch type="button">Chơi lại ván</button>
+        <button class="text-btn" data-leave-room type="button">Rời phòng</button>
+        <span class="room-strip-msg" data-room-msg></span>
+      </div>
+
+      <div class="status-row">
+        <div class="player-panel p1-panel" id="p1Panel">
+          <span class="player-dot p1-dot"></span>
+          <div><strong>Người chơi 1</strong><small>5 ô bên dưới</small></div>
+          <b id="p1Score">0 điểm</b>
+        </div>
+        <div class="turn-box">
+          <span>LƯỢT HIỆN TẠI</span>
+          <strong id="oTurn">Người chơi 1</strong>
+          <small id="oMessage">Chọn một ô có quân của bạn.</small>
+        </div>
+        <div class="player-panel p2-panel" id="p2Panel">
+          <b id="p2Score">0 điểm</b>
+          <div class="right-text"><strong>Người chơi 2</strong><small>5 ô bên trên</small></div>
+          <span class="player-dot p2-dot"></span>
+        </div>
+      </div>
+
+      <div class="rules-tip">
+        <span>💡</span>
+        <span>Chọn ô của mình → chọn hướng rải → quân được rải từng ô. Nếu gặp ô có quân, tiếp tục rải.</span>
+      </div>
+
+      <div class="o-board-wrap">
+        <div class="o-board">
+          <button class="pit quan" data-pit="0">
+            <span class="pit-name">QUAN 1</span>
+            <span class="stones" id="pit0"></span>
+            <b class="count" id="count0">1</b>
+          </button>
+
+          <div class="small-pits top-row">
+            <button class="pit citizen p2-pit" data-pit="11"><span class="pit-name">Ô 5</span><span class="stones" id="pit11"></span><b class="count" id="count11">5</b></button>
+            <button class="pit citizen p2-pit" data-pit="10"><span class="pit-name">Ô 4</span><span class="stones" id="pit10"></span><b class="count" id="count10">5</b></button>
+            <button class="pit citizen p2-pit" data-pit="9"><span class="pit-name">Ô 3</span><span class="stones" id="pit9"></span><b class="count" id="count9">5</b></button>
+            <button class="pit citizen p2-pit" data-pit="8"><span class="pit-name">Ô 2</span><span class="stones" id="pit8"></span><b class="count" id="count8">5</b></button>
+            <button class="pit citizen p2-pit" data-pit="7"><span class="pit-name">Ô 1</span><span class="stones" id="pit7"></span><b class="count" id="count7">5</b></button>
+          </div>
+
+          <button class="pit quan" data-pit="6">
+            <span class="pit-name">QUAN 2</span>
+            <span class="stones" id="pit6"></span>
+            <b class="count" id="count6">1</b>
+          </button>
+
+          <div class="small-pits bottom-row">
+            <button class="pit citizen p1-pit" data-pit="1"><span class="pit-name">Ô 1</span><span class="stones" id="pit1"></span><b class="count" id="count1">5</b></button>
+            <button class="pit citizen p1-pit" data-pit="2"><span class="pit-name">Ô 2</span><span class="stones" id="pit2"></span><b class="count" id="count2">5</b></button>
+            <button class="pit citizen p1-pit" data-pit="3"><span class="pit-name">Ô 3</span><span class="stones" id="pit3"></span><b class="count" id="count3">5</b></button>
+            <button class="pit citizen p1-pit" data-pit="4"><span class="pit-name">Ô 4</span><span class="stones" id="pit4"></span><b class="count" id="count4">5</b></button>
+            <button class="pit citizen p1-pit" data-pit="5"><span class="pit-name">Ô 5</span><span class="stones" id="pit5"></span><b class="count" id="count5">5</b></button>
+          </div>
+        </div>
+      </div>
+
+      <div class="direction-panel" id="directionPanel">
+        <span>Chọn hướng rải:</span>
+        <button id="leftBtn">↶ Sang trái</button>
+        <button id="rightBtn">↷ Sang phải</button>
+      </div>
+      <div class="sow-animation-status" id="sowStatus">
+        <span class="sow-arrow">➜</span>
+        <span id="sowText">Chọn một ô có quân của bạn.</span>
+      </div>
+
+      <div class="game-help">
+        <b>Luật đơn giản:</b> Mỗi người quản 5 ô dân. Chọn một ô có quân và rải theo một hướng. Khi lượt kết thúc, quân ở ô đối diện có thể bị ăn tùy tình huống. Mỗi ô QUAN có 10 quân và được tính 10 điểm. Mỗi lượt chỉ được ăn tối đa 1 QUAN.
+      </div>
+    </section>
+
+    <!-- CARO -->
+    <section id="caroScreen" class="screen game-screen">
+      <header class="game-header">
+        <button class="back-btn" data-menu>← Menu</button>
+        <div>
+          <p class="eyebrow">GAME 02</p>
+          <h1>Cờ Caro 7×7</h1>
+        </div>
+        <button class="small-btn" id="resetCaro">Chơi lại</button>
+      </header>
+
+      <div class="room-strip hidden" data-room-strip>
+        <span>🌐 Phòng <strong data-room-code></strong></span>
+        <span data-room-role></span>
+        <button class="text-btn" data-copy-room type="button">Sao chép mã</button>
+        <button class="small-btn" data-rematch type="button">Chơi lại ván</button>
+        <button class="text-btn" data-leave-room type="button">Rời phòng</button>
+        <span class="room-strip-msg" data-room-msg></span>
+      </div>
+
+      <div class="caro-layout">
+        <div class="caro-info">
+          <div class="score-card x-card">
+            <span class="symbol">X</span>
+            <div><small>NGƯỜI CHƠI 1</small><strong id="xWins">0 thắng</strong></div>
+          </div>
+          <div class="score-card o-card">
+            <span class="symbol">O</span>
+            <div><small>NGƯỜI CHƠI 2</small><strong id="oWins">0 thắng</strong></div>
+          </div>
+        </div>
+
+        <div class="caro-center">
+          <div class="caro-status" id="caroStatus">Lượt của Người chơi 1 — X</div>
+          <div class="caro-board" id="caroBoard">
+            <button class="cell" data-cell="0"></button>
+            <button class="cell" data-cell="1"></button>
+            <button class="cell" data-cell="2"></button>
+            <button class="cell" data-cell="3"></button>
+            <button class="cell" data-cell="4"></button>
+            <button class="cell" data-cell="5"></button>
+            <button class="cell" data-cell="6"></button>
+            <button class="cell" data-cell="7"></button>
+            <button class="cell" data-cell="8"></button>
+          </div>
+          <button class="primary-btn" id="newRound">Ván mới</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- BẦU CUA TÔM CÁ -->
+    <section id="bauCuaScreen" class="screen game-screen">
+      <header class="game-header">
+        <button class="back-btn" data-menu>← Menu</button>
+        <div>
+          <p class="eyebrow">GAME 03</p>
+          <h1>Bầu Cua Tôm Cá</h1>
+        </div>
+        <button class="small-btn" id="resetBauCua">Chơi lại</button>
+      </header>
+
+      <div class="status-row">
+        <div class="player-panel">
+          <span class="player-dot p1-dot"></span>
+          <div><strong>Tiền của bạn</strong><small>Được cược nhiều ô cùng lúc</small></div>
+          <b id="bcCoins">1000 xu</b>
+        </div>
+        <div class="turn-box">
+          <span>KẾT QUẢ</span>
+          <strong id="bcResultTitle">Đặt cược rồi lắc nhé!</strong>
+          <small id="bcMessage">Chọn mệnh giá, bấm vào ô để đặt cược.</small>
+        </div>
+        <div class="player-panel p2-panel">
+          <b id="bcTotalBet">0 xu</b>
+          <div class="right-text"><strong>Tổng cược</strong><small>ván này</small></div>
+          <span class="player-dot p2-dot"></span>
+        </div>
+      </div>
+
+      <div class="bc-dice" aria-live="polite">
+        <span class="bc-die" id="bcDie0">🎲</span>
+        <span class="bc-die" id="bcDie1">🎲</span>
+        <span class="bc-die" id="bcDie2">🎲</span>
+      </div>
+
+      <div class="bc-board" id="bcBoard"></div>
+
+      <div class="bc-controls">
+        <div class="bc-chips" role="group" aria-label="Mệnh giá cược">
+          <button class="bc-chip bc-chip-10 active" data-chip="10" type="button">10</button>
+          <button class="bc-chip bc-chip-50" data-chip="50" type="button">50</button>
+          <button class="bc-chip bc-chip-100" data-chip="100" type="button">100</button>
+          <button class="bc-chip bc-chip-500" data-chip="500" type="button">500</button>
+        </div>
+        <div class="bc-actions">
+          <button class="back-btn" id="bcClear" type="button">Xóa cược</button>
+          <button class="primary-btn" id="bcRoll" type="button">🎲 Lắc xúc xắc</button>
+        </div>
+      </div>
+
+      <div class="bc-history">
+        <strong>Các ván gần đây</strong>
+        <div id="bcHistory"><p class="empty-note">Chưa có ván nào.</p></div>
+      </div>
+
+      <div class="game-help">
+        <b>Luật chơi:</b> Mỗi ván lắc 3 xúc xắc, mỗi mặt là một trong 6 con: Bầu, Cua, Tôm, Cá, Gà, Nai. Bạn cược vào con nào, mỗi xúc xắc ra con đó bạn được thêm đúng số tiền đã cược (ra 1 con: lời 1 lần, ra 2 con: lời 2 lần, ra 3 con: lời 3 lần) và lấy lại tiền cược. Con không ra thì mất tiền cược. Chơi cho vui, dùng xu ảo.
+      </div>
+    </section>
+
+  </div>
+
+  <div class="modal hidden" id="resultModal">
+    <div class="modal-card">
+      <div class="modal-icon" id="modalIcon">🏆</div>
+      <h2 id="modalTitle">Người chơi 1 thắng!</h2>
+      <p id="modalText">Chúc mừng!</p>
+      <button class="primary-btn" id="modalRestart">Chơi lại</button>
+      <button class="text-btn" id="modalMenu">Về menu</button>
+    </div>
+  </div>
+
+  <aside id="roomTools" class="room-tools chat-drawer hidden" aria-label="Chat và lịch sử trận đấu">
+      <section class="chat-panel">
+        <h3>💬 Chat với đối thủ</h3>
+        <div id="chatMessages" class="chat-messages" aria-live="polite"><p class="empty-note">Tin nhắn sẽ hiện ở đây.</p></div>
+        <form id="chatForm" class="chat-form"><input id="chatInput" maxlength="300" placeholder="Nhập tin nhắn (tối đa 300 ký tự)" autocomplete="off"><button class="primary-btn" type="submit">Gửi</button></form>
+        <p id="chatMessage" class="auth-message" aria-live="polite"></p>
+      </section>
+      <section class="history-panel"><h3>📜 Lịch sử trận đấu</h3><div id="matchHistory" class="match-history"><p class="empty-note">Chưa có trận đấu được lưu.</p></div></section>
+    </aside>
+  <button id="chatToggle" class="chat-toggle hidden" type="button" aria-label="Mở chat với đối thủ" title="Chat với đối thủ">💬<span id="chatBadge" class="chat-badge hidden">0</span></button>
+
+  <!-- Firebase compat SDK: cấu hình thông tin dự án trong online.js -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+  <script src="online.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>
